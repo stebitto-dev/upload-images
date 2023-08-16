@@ -4,7 +4,7 @@ import com.stebitto.uploadimages.datamodels.api.toDomainModel
 import com.stebitto.uploadimages.datamodels.domain.Country
 import javax.inject.Inject
 
-class CountriesRepository @Inject constructor(
+class CountryRepository @Inject constructor(
     private val countryService: CountryService
 ) {
 

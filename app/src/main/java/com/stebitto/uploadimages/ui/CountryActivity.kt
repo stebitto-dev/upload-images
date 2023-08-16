@@ -13,7 +13,7 @@ import timber.log.Timber
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class CountriesActivity : AppCompatActivity() {
+class CountryActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityCountriesBinding
 
