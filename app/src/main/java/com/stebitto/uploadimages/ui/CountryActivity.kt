@@ -16,6 +16,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -24,19 +25,16 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.stebitto.uploadimages.R
+import com.stebitto.uploadimages.actions.SelectedCountry
 import com.stebitto.uploadimages.datamodels.domain.Country
-import com.stebitto.uploadimages.statemachines.AppStateMachine
 import com.stebitto.uploadimages.states.CountryState
 import com.stebitto.uploadimages.ui.theme.UploadImagesTheme
 import dagger.hilt.android.AndroidEntryPoint
-import javax.inject.Inject
 
 @AndroidEntryPoint
 class CountryActivity : ComponentActivity() {
-
-    @Inject
-    lateinit var appStateMachine: AppStateMachine
 
     @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -47,7 +45,6 @@ class CountryActivity : ComponentActivity() {
                     topBar = { TopBar(title = getString(R.string.title_activity_countries)) }
                 ) { contentPadding ->
                     CountryScreen(
-                        appStateMachine = appStateMachine,
                         modifier = Modifier
                             .fillMaxSize()
                             .padding(contentPadding)
@@ -68,15 +65,17 @@ fun TopBar(title: String) {
 }
 
 @Composable
-fun CountryScreen(appStateMachine: AppStateMachine, modifier: Modifier = Modifier) {
+fun CountryScreen(modifier: Modifier = Modifier, countryViewModel: CountryViewModel = viewModel()) {
+
     val uiState =
-        appStateMachine.state.collectAsStateWithLifecycle(initialValue = CountryState.Loading)
+        countryViewModel.state.collectAsStateWithLifecycle(initialValue = CountryState.Loading)
 
     when (uiState.value) {
         is CountryState.Loading -> {}
         is CountryState.CountryList -> CountryList(
             countries = (uiState.value as CountryState.CountryList).countries,
-            modifier = modifier
+            modifier = modifier,
+            onCountrySelect = { countryViewModel.dispatch(SelectedCountry(it)) }
         )
         is CountryState.Error -> {}
         is CountryState.SelectCountry -> {}
@@ -84,13 +83,17 @@ fun CountryScreen(appStateMachine: AppStateMachine, modifier: Modifier = Modifie
 }
 
 @Composable
-fun CountryList(countries: List<Country>, modifier: Modifier = Modifier) {
+fun CountryList(
+    countries: List<Country>,
+    modifier: Modifier = Modifier,
+    onCountrySelect: (Country) -> Unit = {}
+) {
     Surface(modifier = modifier) {
         LazyColumn(
             contentPadding = PaddingValues(vertical = 10.dp)
         ) {
             itemsIndexed(items = countries) { index, country ->
-                CountryCard(name = country.name)
+                CountryCard(country = country, onCountrySelect)
 
                 if (index != countries.size-1) {
                     Divider(thickness = 1.dp, color = MaterialTheme.colorScheme.tertiary)
@@ -101,13 +104,13 @@ fun CountryList(countries: List<Country>, modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun CountryCard(name: String) {
-    Surface(
-        modifier = Modifier.fillMaxWidth(),
-        color = MaterialTheme.colorScheme.background
+fun CountryCard(country: Country, onClick:(Country) -> Unit) {
+    TextButton(
+        onClick = { onClick(country) },
+        modifier = Modifier.fillMaxWidth()
     ) {
         Text(
-            text = name,
+            text = country.name,
             modifier = Modifier.padding(horizontal = 8.dp, vertical = 10.dp),
             style = MaterialTheme.typography.labelLarge,
             textAlign = TextAlign.Center
