@@ -22,8 +22,8 @@ class CountryViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            appStateMachine.state.collect {
-                _state.value = it
+            appStateMachine.state.collect { appState ->
+                if (appState is CountryState) _state.value = appState
             }
         }
     }

@@ -4,15 +4,18 @@ import com.freeletics.flowredux.dsl.FlowReduxStateMachine
 import com.stebitto.uploadimages.actions.Action
 import com.stebitto.uploadimages.actions.SelectedCountry
 import com.stebitto.uploadimages.sources.countries.CountryRepository
+import com.stebitto.uploadimages.states.AppState
 import com.stebitto.uploadimages.states.CountryState
+import com.stebitto.uploadimages.states.UploadImagesState
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import timber.log.Timber
 import javax.inject.Inject
+import javax.inject.Singleton
 
 @OptIn(ExperimentalCoroutinesApi::class)
+@Singleton
 class AppStateMachine @Inject constructor(
     private val countryRepository: CountryRepository
-) : FlowReduxStateMachine<CountryState, Action>(initialState = CountryState.Loading) {
+) : FlowReduxStateMachine<AppState, Action>(initialState = CountryState.Loading) {
 
     init {
         spec {
@@ -28,8 +31,8 @@ class AppStateMachine @Inject constructor(
             }
 
             inState<CountryState.CountryList> {
-                onActionEffect<SelectedCountry> { action, _ ->
-                    Timber.d("Selected country: ${action.country}")
+                on<SelectedCountry> { _, state ->
+                    state.override { UploadImagesState.PickImages }
                 }
             }
         }

@@ -1,5 +1,6 @@
 package com.stebitto.uploadimages.ui
 
+import android.content.Intent
 import android.content.res.Configuration
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -21,6 +22,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -72,15 +74,21 @@ fun CountryScreen(modifier: Modifier = Modifier, countryViewModel: CountryViewMo
     val uiState =
         countryViewModel.state.collectAsStateWithLifecycle(initialValue = CountryState.Loading)
 
+    val context = LocalContext.current
+
     when (uiState.value) {
         is CountryState.Loading -> {}
         is CountryState.CountryList -> CountryList(
             countries = (uiState.value as CountryState.CountryList).countries,
             modifier = modifier,
-            onCountrySelect = { countryViewModel.dispatch(SelectedCountry(it)) }
+            onCountrySelect = {
+                countryViewModel.dispatch(SelectedCountry(it))
+
+                val intent = Intent(context, UploadImagesActivity::class.java)
+                context.startActivity(intent)
+            }
         )
         is CountryState.Error -> {}
-        is CountryState.SelectCountry -> {}
     }
 }
 
