@@ -1,5 +1,8 @@
 package com.stebitto.uploadimages.ui.screens
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -25,6 +28,7 @@ import com.stebitto.uploadimages.actions.SelectedCountry
 import com.stebitto.uploadimages.states.CountryState
 import com.stebitto.uploadimages.states.UploadImagesState
 import com.stebitto.uploadimages.ui.MainViewModel
+import timber.log.Timber
 
 /**
  * enum values that represent the screens in the app
@@ -50,15 +54,32 @@ fun UploadImagesApp(
     viewModel: MainViewModel = viewModel(),
     navHostController: NavHostController = rememberNavController()
 ) {
-    // Get current back stack entry
+    // Get current screen
     val backStackEntry by navHostController.currentBackStackEntryAsState()
-    // Get the name of the current screen
     val currentScreen = UploadImagesScreen.valueOf(
         backStackEntry?.destination?.route ?: UploadImagesScreen.Countries.name
     )
+    // Launch photo picker in multi-select mode
+    val launcher = rememberLauncherForActivityResult(ActivityResultContracts.PickMultipleVisualMedia(5)) { uris ->
+        // Callback is invoked after the user selects media items or closes the
+        // photo picker.
+        if (uris.isNotEmpty()) {
+            Timber.d("Number of items selected: ${uris.size}")
+        } else {
+            Timber.d("No media selected")
+        }
+    }
 
     Scaffold(
-        topBar = { TopBar(currentScreen = currentScreen) }
+        topBar = { TopBar(currentScreen = currentScreen) },
+        floatingActionButton = {
+            if (currentScreen == UploadImagesScreen.UploadImages)
+                UploadImagesFAB {
+                    launcher.launch(
+                        PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                    )
+                }
+        }
     ) { contentPadding ->
         val uiState = viewModel.state.collectAsStateWithLifecycle()
 

@@ -50,7 +50,7 @@ fun EmptyListLabel(modifier: Modifier = Modifier) {
     }
 }
 
-@Preview(name = "Light Mode", widthDp = 320)
+@Preview(name = "Light Mode", showBackground = true, widthDp = 320)
 @Preview(
     uiMode = Configuration.UI_MODE_NIGHT_YES,
     widthDp = 320,
@@ -58,8 +58,8 @@ fun EmptyListLabel(modifier: Modifier = Modifier) {
     name = "Dark Mode"
 )
 @Composable
-fun Preview() {
+fun EmptyListLabelPreview() {
     UploadImagesTheme {
-        UploadImagesFAB {}
+        EmptyListLabel()
     }
 }
