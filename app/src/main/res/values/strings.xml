@@ -1,5 +1,8 @@
 <resources>
     <string name="app_name" translatable="false">UploadImages</string>
 
-    <string name="title_activity_countries">Select your country</string>
+    <string name="title_screen_countries">Select your country</string>
+    <string name="title_screen_upload_images">Upload images</string>
+
+    <string name="upload_images_empty_list">Nothing to show</string>
 </resources>

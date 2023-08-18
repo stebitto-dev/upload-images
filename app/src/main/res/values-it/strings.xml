@@ -1,4 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="title_activity_countries">Seleziona il tuo paese</string>
+    <string name="title_screen_countries">Seleziona il tuo paese</string>
+    <string name="title_screen_upload_images">Carica immagini</string>
+
+    <string name="upload_images_empty_list">Nulla da vedere</string>
 </resources>
