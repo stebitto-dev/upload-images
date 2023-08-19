@@ -4,4 +4,8 @@
     <string name="title_screen_upload_images">Carica immagini</string>
 
     <string name="upload_images_empty_list">Nulla da vedere</string>
+
+    <string name="bottom_bar_gallery_description">Seleziona un\'immagine dalla galleria</string>
+    <string name="bottom_bar_camera_description">Fai una foto con la fotocamera</string>
+    <string name="bottom_bar_upload_description">Carica immagini</string>
 </resources>

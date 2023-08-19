@@ -2,15 +2,16 @@ package com.stebitto.uploadimages.ui.screens
 
 import android.content.res.Configuration
 import androidx.compose.foundation.layout.Box
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
+import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.stebitto.uploadimages.R
@@ -22,8 +23,38 @@ fun UploadImagesFAB(onClick: () -> Unit) {
     FloatingActionButton(
         onClick = { onClick() }
     ) {
-        Icon(Icons.Filled.Add, "Upload images")
+        Icon(
+            painter = painterResource(R.drawable.icon_cloud_upload),
+            contentDescription = stringResource(R.string.bottom_bar_upload_description)
+        )
     }
+}
+
+@Composable
+fun UploadImagesBottomBar(
+    onGalleryClick: () -> Unit = {},
+    onCameraClick: () -> Unit = {},
+    onFABClick: () -> Unit = {}
+) {
+    BottomAppBar(
+        actions = {
+            // Gallery
+            IconButton(onClick = { onGalleryClick() }) {
+                Icon(
+                    painter = painterResource(R.drawable.icon_gallery),
+                    contentDescription = stringResource(R.string.bottom_bar_gallery_description)
+                )
+            }
+            // Camera
+            IconButton(onClick = { onCameraClick() }) {
+                Icon(
+                    painter = painterResource(R.drawable.icon_photo_camera),
+                    contentDescription = stringResource(R.string.bottom_bar_camera_description)
+                )
+            }
+        },
+        floatingActionButton = { UploadImagesFAB { onFABClick() } }
+    )
 }
 
 @Composable
@@ -50,7 +81,11 @@ fun EmptyListLabel(modifier: Modifier = Modifier) {
     }
 }
 
-@Preview(name = "Light Mode", showBackground = true, widthDp = 320)
+@Preview(
+    name = "Light Mode",
+    showBackground = true,
+    widthDp = 320
+)
 @Preview(
     uiMode = Configuration.UI_MODE_NIGHT_YES,
     widthDp = 320,
@@ -58,8 +93,8 @@ fun EmptyListLabel(modifier: Modifier = Modifier) {
     name = "Dark Mode"
 )
 @Composable
-fun EmptyListLabelPreview() {
+fun UploadImagesBottomBarPreview() {
     UploadImagesTheme {
-        EmptyListLabel()
+        UploadImagesBottomBar()
     }
 }

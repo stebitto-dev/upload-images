@@ -15,6 +15,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -25,6 +26,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.stebitto.uploadimages.R
 import com.stebitto.uploadimages.actions.SelectedCountry
+import com.stebitto.uploadimages.getTmpFileUri
 import com.stebitto.uploadimages.states.CountryState
 import com.stebitto.uploadimages.states.UploadImagesState
 import com.stebitto.uploadimages.ui.MainViewModel
@@ -54,31 +56,45 @@ fun UploadImagesApp(
     viewModel: MainViewModel = viewModel(),
     navHostController: NavHostController = rememberNavController()
 ) {
+    val context = LocalContext.current
+
     // Get current screen
     val backStackEntry by navHostController.currentBackStackEntryAsState()
     val currentScreen = UploadImagesScreen.valueOf(
         backStackEntry?.destination?.route ?: UploadImagesScreen.Countries.name
     )
+
     // Launch photo picker in multi-select mode
-    val launcher = rememberLauncherForActivityResult(ActivityResultContracts.PickMultipleVisualMedia(5)) { uris ->
-        // Callback is invoked after the user selects media items or closes the
-        // photo picker.
+    val launcherGallery = rememberLauncherForActivityResult(ActivityResultContracts.PickMultipleVisualMedia(5)) { uris ->
         if (uris.isNotEmpty()) {
             Timber.d("Number of items selected: ${uris.size}")
         } else {
             Timber.d("No media selected")
         }
     }
+    // Launch camera
+    val uri = context.getTmpFileUri()
+    val launcherCamera = rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) { pictureWasTaken ->
+        if (pictureWasTaken) {
+            Timber.d("Picture saved at $uri")
+        }
+    }
 
     Scaffold(
         topBar = { TopBar(currentScreen = currentScreen) },
-        floatingActionButton = {
-            if (currentScreen == UploadImagesScreen.UploadImages)
-                UploadImagesFAB {
-                    launcher.launch(
-                        PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
-                    )
-                }
+        bottomBar = {
+            if (currentScreen == UploadImagesScreen.UploadImages) {
+                UploadImagesBottomBar(
+                    onGalleryClick = {
+                        launcherGallery.launch(
+                            PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                        )
+                    },
+                    onCameraClick = {
+                        launcherCamera.launch(uri)
+                    }
+                )
+            }
         }
     ) { contentPadding ->
         val uiState = viewModel.state.collectAsStateWithLifecycle()
