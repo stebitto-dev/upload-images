@@ -34,6 +34,7 @@ fun UploadImagesFAB(onClick: () -> Unit) {
 fun UploadImagesBottomBar(
     onGalleryClick: () -> Unit = {},
     onCameraClick: () -> Unit = {},
+    onGooglePhotoClick: () -> Unit = {},
     onFABClick: () -> Unit = {}
 ) {
     BottomAppBar(
@@ -50,6 +51,13 @@ fun UploadImagesBottomBar(
                 Icon(
                     painter = painterResource(R.drawable.icon_photo_camera),
                     contentDescription = stringResource(R.string.bottom_bar_camera_description)
+                )
+            }
+            // Google Photo
+            IconButton(onClick = { onGooglePhotoClick() }) {
+                Icon(
+                    painter = painterResource(R.drawable.icon_google_logo),
+                    contentDescription = stringResource(R.string.bottom_bar_google_photo_description)
                 )
             }
         },

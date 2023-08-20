@@ -5,7 +5,10 @@
 
     <string name="upload_images_empty_list">Nulla da vedere</string>
 
-    <string name="bottom_bar_gallery_description">Seleziona un\'immagine dalla galleria</string>
+    <string name="bottom_bar_gallery_description">Seleziona immagini dalla galleria</string>
     <string name="bottom_bar_camera_description">Fai una foto con la fotocamera</string>
+    <string name="bottom_bar_google_photo_description">Seleziona immagini da Google Photo</string>
     <string name="bottom_bar_upload_description">Carica immagini</string>
+
+    <string name="error_google_photos">Google Foto non disponibile</string>
 </resources>

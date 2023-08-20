@@ -8,5 +8,8 @@
 
     <string name="bottom_bar_gallery_description">Pick image from gallery</string>
     <string name="bottom_bar_camera_description">Capture image from camera</string>
+    <string name="bottom_bar_google_photo_description">Pick image from Google Photo</string>
     <string name="bottom_bar_upload_description">Upload images</string>
+
+    <string name="error_google_photos">Google Photos not available</string>
 </resources>

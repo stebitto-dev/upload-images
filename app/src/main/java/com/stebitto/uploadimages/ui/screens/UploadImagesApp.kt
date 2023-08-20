@@ -1,5 +1,9 @@
 package com.stebitto.uploadimages.ui.screens
 
+import android.app.Activity
+import android.content.ActivityNotFoundException
+import android.content.Intent
+import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
@@ -9,11 +13,15 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -24,12 +32,14 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.stebitto.uploadimages.GOOGLE_PHOTO_PACKAGE_NAME
 import com.stebitto.uploadimages.R
 import com.stebitto.uploadimages.actions.SelectedCountry
 import com.stebitto.uploadimages.getTmpFileUri
 import com.stebitto.uploadimages.states.CountryState
 import com.stebitto.uploadimages.states.UploadImagesState
 import com.stebitto.uploadimages.ui.MainViewModel
+import kotlinx.coroutines.launch
 import timber.log.Timber
 
 /**
@@ -79,6 +89,28 @@ fun UploadImagesApp(
             Timber.d("Picture saved at $uri")
         }
     }
+    // Launch Google Photo
+    val launcherGooglePhoto =
+        rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if (result.resultCode == Activity.RESULT_OK) {
+                // get list of uris from result
+                result.data?.clipData?.let {
+                    val uriList = mutableListOf<Uri>()
+                    for (i in 0..it.itemCount) {
+                        uriList.add(it.getItemAt(i).uri)
+                    }
+                }
+            }
+        }
+    val googlePhotoIntent = Intent().apply {
+        action = Intent.ACTION_PICK
+        type = "image/*"
+        `package` = GOOGLE_PHOTO_PACKAGE_NAME
+        putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
+    }
+
+    val snackbarHostState = remember { SnackbarHostState() }
+    val coroutineScope = rememberCoroutineScope()
 
     Scaffold(
         topBar = { TopBar(currentScreen = currentScreen) },
@@ -92,10 +124,20 @@ fun UploadImagesApp(
                     },
                     onCameraClick = {
                         launcherCamera.launch(uri)
+                    },
+                    onGooglePhotoClick = {
+                        try {
+                            launcherGooglePhoto.launch(googlePhotoIntent)
+                        } catch (e: ActivityNotFoundException) {
+                            coroutineScope.launch {
+                                snackbarHostState.showSnackbar(context.getString(R.string.error_google_photos))
+                            }
+                        }
                     }
                 )
             }
-        }
+        },
+        snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { contentPadding ->
         val uiState = viewModel.state.collectAsStateWithLifecycle()
 

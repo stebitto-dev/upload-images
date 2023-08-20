@@ -13,3 +13,5 @@ fun Context.getTmpFileUri(): Uri {
 
     return FileProvider.getUriForFile(applicationContext, "${BuildConfig.APPLICATION_ID}.provider", tmpFile)
 }
+
+const val GOOGLE_PHOTO_PACKAGE_NAME = "com.google.android.apps.photos"
