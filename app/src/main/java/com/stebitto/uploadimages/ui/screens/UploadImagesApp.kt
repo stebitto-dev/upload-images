@@ -35,6 +35,7 @@ import androidx.navigation.compose.rememberNavController
 import com.stebitto.uploadimages.GOOGLE_PHOTO_PACKAGE_NAME
 import com.stebitto.uploadimages.R
 import com.stebitto.uploadimages.actions.SelectedCountry
+import com.stebitto.uploadimages.actions.UploadImages
 import com.stebitto.uploadimages.getTmpFileUri
 import com.stebitto.uploadimages.states.CountryState
 import com.stebitto.uploadimages.states.UploadImagesState
@@ -78,6 +79,7 @@ fun UploadImagesApp(
     val launcherGallery = rememberLauncherForActivityResult(ActivityResultContracts.PickMultipleVisualMedia(5)) { uris ->
         if (uris.isNotEmpty()) {
             Timber.d("Number of items selected: ${uris.size}")
+            viewModel.dispatch(UploadImages(uris))
         } else {
             Timber.d("No media selected")
         }
@@ -87,19 +89,26 @@ fun UploadImagesApp(
     val launcherCamera = rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) { pictureWasTaken ->
         if (pictureWasTaken) {
             Timber.d("Picture saved at $uri")
+            viewModel.dispatch(UploadImages(listOf(uri)))
+        } else {
+            Timber.d("No picture taken from camera")
         }
     }
     // Launch Google Photo
     val launcherGooglePhoto =
         rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.resultCode == Activity.RESULT_OK) {
+                Timber.d("Number of items selected: ${result.data?.clipData?.itemCount}")
                 // get list of uris from result
                 result.data?.clipData?.let {
                     val uriList = mutableListOf<Uri>()
                     for (i in 0..it.itemCount) {
                         uriList.add(it.getItemAt(i).uri)
                     }
+                    viewModel.dispatch(UploadImages(uriList))
                 }
+            } else {
+                Timber.d("No media selected")
             }
         }
     val googlePhotoIntent = Intent().apply {

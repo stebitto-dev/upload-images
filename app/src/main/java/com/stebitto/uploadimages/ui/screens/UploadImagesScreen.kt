@@ -72,6 +72,7 @@ fun UploadImagesScreen(
 ) {
     when (uiState) {
         is UploadImagesState.PickImages -> { EmptyListLabel(modifier) }
+        is UploadImagesState.UploadedImages -> {}
         is UploadImagesState.Error -> {}
     }
 }
