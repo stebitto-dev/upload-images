@@ -33,9 +33,11 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.stebitto.uploadimages.GOOGLE_PHOTO_PACKAGE_NAME
+import com.stebitto.uploadimages.PICK_IMAGES_MAX_NUMBER
 import com.stebitto.uploadimages.R
 import com.stebitto.uploadimages.actions.SelectedCountry
 import com.stebitto.uploadimages.actions.UploadImages
+import com.stebitto.uploadimages.copyTextToClipboard
 import com.stebitto.uploadimages.getTmpFileUri
 import com.stebitto.uploadimages.states.CountryState
 import com.stebitto.uploadimages.states.UploadImagesState
@@ -76,7 +78,9 @@ fun UploadImagesApp(
     )
 
     // Launch photo picker in multi-select mode
-    val launcherGallery = rememberLauncherForActivityResult(ActivityResultContracts.PickMultipleVisualMedia(5)) { uris ->
+    val launcherGallery = rememberLauncherForActivityResult(
+        ActivityResultContracts.PickMultipleVisualMedia(PICK_IMAGES_MAX_NUMBER)
+    ) { uris ->
         if (uris.isNotEmpty()) {
             Timber.d("Number of items selected: ${uris.size}")
             viewModel.dispatch(UploadImages(uris))
@@ -86,14 +90,15 @@ fun UploadImagesApp(
     }
     // Launch camera
     val uri = context.getTmpFileUri()
-    val launcherCamera = rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) { pictureWasTaken ->
-        if (pictureWasTaken) {
-            Timber.d("Picture saved at $uri")
-            viewModel.dispatch(UploadImages(listOf(uri)))
-        } else {
-            Timber.d("No picture taken from camera")
+    val launcherCamera =
+        rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) { pictureWasTaken ->
+            if (pictureWasTaken) {
+                Timber.d("Picture saved at $uri")
+                viewModel.dispatch(UploadImages(listOf(uri)))
+            } else {
+                Timber.d("No picture taken from camera")
+            }
         }
-    }
     // Launch Google Photo
     val launcherGooglePhoto =
         rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
@@ -156,7 +161,7 @@ fun UploadImagesApp(
             modifier = Modifier.padding(contentPadding)
         ) {
             composable(route = UploadImagesScreen.Countries.name) {
-                if (uiState.value is CountryState) {
+                if (uiState.value is CountryState) { // for extra security, compose only with proper state
                     CountryScreen(
                         uiState = uiState.value as CountryState,
                         onCountrySelect = {
@@ -168,10 +173,20 @@ fun UploadImagesApp(
                 }
             }
             composable(route = UploadImagesScreen.UploadImages.name) {
-                if (uiState.value is UploadImagesState) {
+                if (uiState.value is UploadImagesState) { // for extra security, compose only with proper state
                     UploadImagesScreen(
                         uiState = uiState.value as UploadImagesState,
-                        modifier = Modifier.fillMaxSize()
+                        modifier = Modifier.fillMaxSize(),
+                        onUploadedImageClick = { uploadedImage ->
+                            uploadedImage.url?.let {
+                                context.copyTextToClipboard(it)
+                                coroutineScope.launch {
+                                    snackbarHostState.showSnackbar(
+                                        context.getString(R.string.text_copied_to_clipboard)
+                                    )
+                                }
+                            }
+                        }
                     )
                 }
             }

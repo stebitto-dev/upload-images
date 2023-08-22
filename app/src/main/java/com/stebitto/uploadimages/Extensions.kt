@@ -1,12 +1,11 @@
 package com.stebitto.uploadimages
 
+import android.content.ClipData
+import android.content.ClipboardManager
 import android.content.Context
-import android.graphics.Bitmap
-import android.graphics.ImageDecoder
+import android.content.Context.CLIPBOARD_SERVICE
 import android.net.Uri
-import android.util.Base64
 import androidx.core.content.FileProvider
-import java.io.ByteArrayOutputStream
 import java.io.File
 
 fun Context.getTmpFileUri(): Uri {
@@ -18,14 +17,19 @@ fun Context.getTmpFileUri(): Uri {
     return FileProvider.getUriForFile(applicationContext, "${BuildConfig.APPLICATION_ID}.provider", tmpFile)
 }
 
-fun Context.getBitmap(uri: Uri): Bitmap {
-    val decoder = ImageDecoder.createSource(contentResolver, uri)
-    return ImageDecoder.decodeBitmap(decoder)
+fun Context.copyTextToClipboard(textToCopy: String) {
+    val clipboardManager = getSystemService(CLIPBOARD_SERVICE) as ClipboardManager
+    clipboardManager.setPrimaryClip(ClipData.newPlainText("", textToCopy))
 }
 
-fun Bitmap.encodeImage(): String {
-    val outputStream = ByteArrayOutputStream()
-    compress(Bitmap.CompressFormat.JPEG, 10, outputStream)
-    val b = outputStream.toByteArray()
-    return Base64.encodeToString(b, Base64.DEFAULT)
-}
+//fun Context.getBitmap(uri: Uri): Bitmap {
+//    val decoder = ImageDecoder.createSource(contentResolver, uri)
+//    return ImageDecoder.decodeBitmap(decoder)
+//}
+
+//fun Bitmap.encodeImage(): String {
+//    val outputStream = ByteArrayOutputStream()
+//    compress(Bitmap.CompressFormat.JPEG, 10, outputStream)
+//    val b = outputStream.toByteArray()
+//    return Base64.encodeToString(b, Base64.DEFAULT)
+//}

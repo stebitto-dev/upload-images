@@ -22,6 +22,10 @@ interface UploadImagesService {
     ): String
 }
 
+/**
+ * Credit to https://cketti.de/2020/05/23/content-uris-and-okhttp/
+ * Used to upload an image directly from its content URI
+ */
 class ContentUriRequestBody(
     private val contentResolver: ContentResolver,
     private val contentUri: Uri

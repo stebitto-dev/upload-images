@@ -16,6 +16,9 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * StateMachine used as single source of truth for Redux pattern
+ */
 @OptIn(ExperimentalCoroutinesApi::class)
 @Singleton
 class AppStateMachine @Inject constructor(
@@ -53,6 +56,9 @@ class AppStateMachine @Inject constructor(
         }
     }
 
+    /**
+     * Pure functions similar to reducers
+     */
     private suspend fun uploadImage(uri: Uri) = coroutineScope {
         launch { uploadImagesRepository.uploadImage(uri) }
     }

@@ -13,6 +13,10 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+/**
+ * Used only as UI state holder.
+ * Business logic and state management are responsibilities of [AppStateMachine]
+ */
 @HiltViewModel
 class MainViewModel @Inject constructor(
     private val appStateMachine: AppStateMachine

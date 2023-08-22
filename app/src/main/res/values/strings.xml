@@ -4,7 +4,8 @@
     <string name="title_screen_countries">Select your country</string>
     <string name="title_screen_upload_images">Upload images</string>
 
-    <string name="upload_images_empty_list">Nothing to show</string>
+    <string name="upload_images_empty_list">Pick images from bottom bar</string>
+    <string name="upload_images_copy_text_description">Copy url</string>
 
     <string name="bottom_bar_gallery_description">Pick image from gallery</string>
     <string name="bottom_bar_camera_description">Capture image from camera</string>
@@ -12,4 +13,5 @@
     <string name="bottom_bar_upload_description">Upload images</string>
 
     <string name="error_google_photos">Google Photos not available</string>
+    <string name="text_copied_to_clipboard">Url copied to clipboard</string>
 </resources>

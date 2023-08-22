@@ -22,7 +22,11 @@ class UploadImagesRepository @Inject constructor(
     suspend fun uploadImage(contentUri: Uri): String {
         val requestFile = ContentUriRequestBody(context.contentResolver, contentUri)
         val requestType = "fileupload".toRequestBody("multipart/form-data".toMediaTypeOrNull())
-        val multipartBody = MultipartBody.Part.createFormData("fileToUpload", contentUri.lastPathSegment, requestFile)
+        val multipartBody = MultipartBody.Part.createFormData(
+            "fileToUpload",
+            contentUri.lastPathSegment,
+            requestFile
+        )
         return uploadImagesService.uploadImage(requestType, multipartBody)
     }
 }

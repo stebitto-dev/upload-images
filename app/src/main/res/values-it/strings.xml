@@ -3,7 +3,8 @@
     <string name="title_screen_countries">Seleziona il tuo paese</string>
     <string name="title_screen_upload_images">Carica immagini</string>
 
-    <string name="upload_images_empty_list">Nulla da vedere</string>
+    <string name="upload_images_empty_list">Seleziona immagini dalla barra in basso</string>
+    <string name="upload_images_copy_text_description">Copia url</string>
 
     <string name="bottom_bar_gallery_description">Seleziona immagini dalla galleria</string>
     <string name="bottom_bar_camera_description">Fai una foto con la fotocamera</string>
@@ -11,4 +12,5 @@
     <string name="bottom_bar_upload_description">Carica immagini</string>
 
     <string name="error_google_photos">Google Foto non disponibile</string>
+    <string name="text_copied_to_clipboard">Url copiato negli appunti</string>
 </resources>
