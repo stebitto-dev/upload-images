@@ -96,18 +96,24 @@ fun UploadImagesScreen(
 ) {
     when (uiState) {
         is UploadImagesState.PickImages -> {
-            EmptyListLabel(modifier)
+            val imageList = uiState.uploadedImages + uiState.imagesToUpload
+            if (imageList.isEmpty())
+                EmptyListLabel(modifier)
+            else
+                UploadImagesList(
+                    images = imageList,
+                    modifier = modifier,
+                    onItemClick = onUploadedImageClick
+                )
         }
 
-        is UploadImagesState.UploadedImages -> {
+        is UploadImagesState.UploadingImages -> {
             UploadImagesList(
-                images = uiState.images,
+                images = uiState.uploadedImages + uiState.uploadingImages,
                 modifier = modifier,
                 onItemClick = onUploadedImageClick
             )
         }
-
-        is UploadImagesState.Error -> {}
     }
 }
 

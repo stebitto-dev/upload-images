@@ -4,11 +4,13 @@ import com.stebitto.uploadimages.datamodels.domain.AppImage
 
 sealed interface UploadImagesState : AppState {
 
-    object PickImages : UploadImagesState
-
-    data class UploadedImages(
-        val images: List<AppImage>
+    data class PickImages(
+        val uploadedImages: List<AppImage> = emptyList(),
+        val imagesToUpload: List<AppImage> = emptyList()
     ) : UploadImagesState
 
-    data class Error(val message: String?) : UploadImagesState
+    data class UploadingImages(
+        val uploadedImages: List<AppImage> = emptyList(),
+        val uploadingImages: List<AppImage>
+    ) : UploadImagesState
 }
