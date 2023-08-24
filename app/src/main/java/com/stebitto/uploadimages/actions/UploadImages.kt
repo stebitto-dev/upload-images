@@ -1,8 +1,10 @@
 package com.stebitto.uploadimages.actions
 
 import android.net.Uri
-import java.io.InputStream
+import com.stebitto.uploadimages.datamodels.domain.AppImage
 
-data class UploadImages(
+data class PickedImages(
     val images: List<Uri>
-) : Action
+): Action
+
+object UploadImages : Action

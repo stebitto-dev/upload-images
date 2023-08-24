@@ -5,6 +5,7 @@
 
     <string name="upload_images_empty_list">Seleziona immagini dalla barra in basso</string>
     <string name="upload_images_copy_text_description">Copia url</string>
+    <string name="upload_images_error_description">Errore durante il caricamento dell\'immagine</string>
 
     <string name="bottom_bar_gallery_description">Seleziona immagini dalla galleria</string>
     <string name="bottom_bar_camera_description">Fai una foto con la fotocamera</string>

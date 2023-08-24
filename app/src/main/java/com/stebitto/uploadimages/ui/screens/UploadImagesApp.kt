@@ -35,6 +35,7 @@ import androidx.navigation.compose.rememberNavController
 import com.stebitto.uploadimages.GOOGLE_PHOTO_PACKAGE_NAME
 import com.stebitto.uploadimages.PICK_IMAGES_MAX_NUMBER
 import com.stebitto.uploadimages.R
+import com.stebitto.uploadimages.actions.PickedImages
 import com.stebitto.uploadimages.actions.SelectedCountry
 import com.stebitto.uploadimages.actions.UploadImages
 import com.stebitto.uploadimages.copyTextToClipboard
@@ -83,7 +84,7 @@ fun UploadImagesApp(
     ) { uris ->
         if (uris.isNotEmpty()) {
             Timber.d("Number of items selected: ${uris.size}")
-            viewModel.dispatch(UploadImages(uris))
+            viewModel.dispatch(PickedImages(uris))
         } else {
             Timber.d("No media selected")
         }
@@ -94,7 +95,7 @@ fun UploadImagesApp(
         rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) { pictureWasTaken ->
             if (pictureWasTaken) {
                 Timber.d("Picture saved at $uri")
-                viewModel.dispatch(UploadImages(listOf(uri)))
+                viewModel.dispatch(PickedImages(listOf(uri)))
             } else {
                 Timber.d("No picture taken from camera")
             }
@@ -110,7 +111,7 @@ fun UploadImagesApp(
                     for (i in 0..it.itemCount) {
                         uriList.add(it.getItemAt(i).uri)
                     }
-                    viewModel.dispatch(UploadImages(uriList))
+                    viewModel.dispatch(PickedImages(uriList))
                 }
             } else {
                 Timber.d("No media selected")
@@ -147,7 +148,8 @@ fun UploadImagesApp(
                                 snackbarHostState.showSnackbar(context.getString(R.string.error_google_photos))
                             }
                         }
-                    }
+                    },
+                    onFABClick = { viewModel.dispatch(UploadImages) }
                 )
             }
         },

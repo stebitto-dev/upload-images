@@ -6,6 +6,7 @@
 
     <string name="upload_images_empty_list">Pick images from bottom bar</string>
     <string name="upload_images_copy_text_description">Copy url</string>
+    <string name="upload_images_error_description">Error during image upload</string>
 
     <string name="bottom_bar_gallery_description">Pick image from gallery</string>
     <string name="bottom_bar_camera_description">Capture image from camera</string>
