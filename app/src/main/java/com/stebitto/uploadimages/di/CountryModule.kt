@@ -17,7 +17,7 @@ object CountryModule {
     @Provides
     fun provideLoggingHttpClient(): OkHttpClient {
         val loggingInterceptor = HttpLoggingInterceptor()
-            .apply { level = HttpLoggingInterceptor.Level.BODY }
+            .apply { level = HttpLoggingInterceptor.Level.NONE }
 
         return OkHttpClient.Builder()
             .addInterceptor(loggingInterceptor)

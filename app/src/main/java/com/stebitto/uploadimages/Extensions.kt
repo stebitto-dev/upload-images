@@ -9,8 +9,8 @@ import android.os.Build
 import androidx.core.content.FileProvider
 import java.io.File
 
-fun Context.getTmpFileUri(): Uri {
-    val tmpFile = File.createTempFile("tmp_image_file", ".png", cacheDir).apply {
+fun Context.getTmpFileUri(filename: String): Uri {
+    val tmpFile = File.createTempFile(filename, ".png", cacheDir).apply {
         createNewFile()
         deleteOnExit()
     }

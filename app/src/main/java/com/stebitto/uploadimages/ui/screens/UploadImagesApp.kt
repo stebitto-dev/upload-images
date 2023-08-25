@@ -46,6 +46,7 @@ import com.stebitto.uploadimages.states.UploadImagesState
 import com.stebitto.uploadimages.ui.MainViewModel
 import kotlinx.coroutines.launch
 import timber.log.Timber
+import java.util.UUID
 
 /**
  * enum values that represent the screens in the app
@@ -91,12 +92,12 @@ fun UploadImagesApp(
         }
     }
     // Launch camera
-    val uri = context.getTmpFileUri()
+    var cameraUri: Uri = Uri.EMPTY
     val launcherCamera =
         rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) { pictureWasTaken ->
             if (pictureWasTaken) {
-                Timber.d("Picture saved at $uri")
-                viewModel.dispatch(PickedImages(listOf(uri)))
+                Timber.d("Picture saved at $cameraUri")
+                viewModel.dispatch(PickedImages(listOf(cameraUri)))
             } else {
                 Timber.d("No picture taken from camera")
             }
@@ -139,7 +140,8 @@ fun UploadImagesApp(
                         )
                     },
                     onCameraClick = {
-                        launcherCamera.launch(uri)
+                        cameraUri = context.getTmpFileUri(UUID.randomUUID().toString())
+                        launcherCamera.launch(cameraUri)
                     },
                     onGooglePhotoClick = {
                         try {
