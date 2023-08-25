@@ -2,23 +2,24 @@ package com.stebitto.uploadimages.ui.screens
 
 import android.content.res.Configuration
 import android.net.Uri
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.BottomAppBar
-import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -28,7 +29,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -137,73 +139,92 @@ fun UploadImagesList(
     onItemClick: (AppImage) -> Unit = {}
 ) {
     Surface(modifier = modifier) {
-        LazyColumn(
-            verticalArrangement = Arrangement.spacedBy(10.dp)
+        LazyVerticalGrid(
+            columns = GridCells.Fixed(count = 3),
+            contentPadding = PaddingValues(all = 2.dp)
         ) {
             items(items = images) { image: AppImage ->
-                UploadedImageCard(appImage = image, onCardClick = onItemClick)
+                UploadedImageCard(appImage = image, onCopyClick = onItemClick)
             }
         }
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun UploadedImageCard(
     appImage: AppImage,
-    onCardClick: (AppImage) -> Unit = {}
+    onCopyClick: (AppImage) -> Unit = {}
 ) {
-    Card(
-        onClick = { onCardClick(appImage) }
+    Box(
+        modifier = Modifier.padding(all = 2.dp),
+        contentAlignment = Alignment.BottomEnd
     ) {
+        AsyncImage(
+            model = appImage.contentUri,
+            contentDescription = null,
+            contentScale = ContentScale.Crop,
+            modifier = Modifier.aspectRatio(1.0f)
+        )
+
         Row(
             modifier = Modifier
-                .padding(horizontal = 16.dp, vertical = 8.dp)
-                .fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                AsyncImage(
-                    model = appImage.contentUri,
-                    contentDescription = null,
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier
-                        .size(60.dp)
-                        .clip(CircleShape)
+                .background(
+                    brush = Brush.verticalGradient(
+                        listOf(
+                            Color.Transparent,
+                            MaterialTheme.colorScheme.onBackground
+                        )
+                    )
                 )
+                .height(60.dp)
+                .fillMaxSize(),
+            horizontalArrangement = Arrangement.End,
+            verticalAlignment = Alignment.Bottom
+        ) {
+            val overlayElementModifier = Modifier.size(26.dp).padding(all = 2.dp)
+            val overlayElementColor = MaterialTheme.colorScheme.background
 
-                Spacer(modifier = Modifier.width(8.dp))
-
-                Text(text = appImage.name)
+            IconButton(
+                onClick = { onCopyClick(appImage) },
+                modifier = Modifier.size(30.dp)
+            ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.icon_content_copy),
+                    contentDescription = stringResource(id = R.string.upload_images_copy_text_description),
+                    modifier = overlayElementModifier,
+                    tint = overlayElementColor
+                )
             }
 
-            val iconModifier = Modifier.size(30.dp)
             when (appImage.status) {
                 UploadImageStatus.TO_UPLOAD -> {
                     Icon(
                         painter = painterResource(id = R.drawable.icon_cloud_off),
                         contentDescription = null,
-                        modifier = iconModifier
+                        modifier = overlayElementModifier,
+                        tint = overlayElementColor
                     )
                 }
                 UploadImageStatus.IS_LOADING -> {
-                    CircularProgressIndicator()
+                    CircularProgressIndicator(
+                        modifier = overlayElementModifier,
+                        color = overlayElementColor
+                    )
                 }
                 UploadImageStatus.UPLOADED -> {
                     Icon(
-                        painter = painterResource(id = R.drawable.icon_content_copy),
+                        imageVector = Icons.Default.CheckCircle,
                         contentDescription = stringResource(id = R.string.upload_images_copy_text_description),
-                        modifier = iconModifier
+                        modifier = overlayElementModifier,
+                        tint = overlayElementColor
                     )
                 }
                 UploadImageStatus.ERROR -> {
                     Icon(
                         imageVector = Icons.Default.Warning,
                         contentDescription = stringResource(id = R.string.upload_images_error_description),
-                        modifier = iconModifier
+                        modifier = overlayElementModifier,
+                        tint = overlayElementColor
                     )
                 }
             }
@@ -241,15 +262,14 @@ fun UploadImagesBottomBarPreview() {
     name = "Dark Mode"
 )
 @Composable
-fun UploadedImageCardPreview() {
+fun UploadedImagesListPreview() {
     UploadImagesTheme {
-        UploadedImageCard(
+        UploadImagesList(List(10) {
             AppImage(
                 id = "",
                 contentUri = Uri.EMPTY,
-                name = "Photo name test",
                 status = UploadImageStatus.TO_UPLOAD
             )
-        )
+        })
     }
 }

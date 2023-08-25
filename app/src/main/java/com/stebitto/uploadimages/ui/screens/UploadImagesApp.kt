@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
@@ -180,12 +181,16 @@ fun UploadImagesApp(
                         uiState = uiState.value as UploadImagesState,
                         modifier = Modifier.fillMaxSize(),
                         onUploadedImageClick = { uploadedImage ->
-                            uploadedImage.url?.let {
-                                context.copyTextToClipboard(it)
-                                coroutineScope.launch {
-                                    snackbarHostState.showSnackbar(
-                                        context.getString(R.string.text_copied_to_clipboard)
-                                    )
+                            uploadedImage.url?.let { // if url is not populated, image is not uploaded yet
+                                // copy url to clipboard
+                                if (!context.copyTextToClipboard(it)) {
+                                    // and inform user about it
+                                    coroutineScope.launch {
+                                        snackbarHostState.showSnackbar(
+                                            message = context.getString(R.string.text_copied_to_clipboard),
+                                            duration = SnackbarDuration.Short
+                                        )
+                                    }
                                 }
                             }
                         }

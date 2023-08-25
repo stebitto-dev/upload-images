@@ -56,8 +56,7 @@ class AppStateMachine @Inject constructor(
                     val newImagesList = action.images.map { contentUri ->
                         AppImage(
                             id = UUID.randomUUID().toString(),
-                            contentUri = contentUri,
-                            name = contentUri.lastPathSegment ?: ""
+                            contentUri = contentUri
                         )
                     }
                     // append new picked images to current list
