@@ -1,6 +1,10 @@
 package com.stebitto.uploadimages.di
 
+import com.stebitto.uploadimages.sources.countries.CountryRepository
 import com.stebitto.uploadimages.sources.countries.CountryService
+import com.stebitto.uploadimages.sources.countries.ICountryRepository
+import com.stebitto.uploadimages.states.AppState
+import com.stebitto.uploadimages.states.CountryState
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -13,6 +17,13 @@ import retrofit2.converter.moshi.MoshiConverterFactory
 @Module
 @InstallIn(SingletonComponent::class)
 object CountryModule {
+
+    @Provides
+    fun provideAppState(): AppState = CountryState.Loading
+
+    @Provides
+    fun provideCountryRepository(countryService: CountryService): ICountryRepository =
+        CountryRepository(countryService)
 
     @Provides
     fun provideLoggingHttpClient(): OkHttpClient {

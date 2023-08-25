@@ -14,12 +14,16 @@ import java.io.File
 import java.io.InputStream
 import javax.inject.Inject
 
+interface IUploadImagesRepository {
+    suspend fun uploadImage(contentUri: Uri): String
+}
+
 class UploadImagesRepository @Inject constructor(
     @ApplicationContext private val context: Context,
     private val uploadImagesService: UploadImagesService
-) {
+) : IUploadImagesRepository {
 
-    suspend fun uploadImage(contentUri: Uri): String {
+    override suspend fun uploadImage(contentUri: Uri): String {
         val requestFile = ContentUriRequestBody(context.contentResolver, contentUri)
         val requestType = "fileupload".toRequestBody("multipart/form-data".toMediaTypeOrNull())
         val multipartBody = MultipartBody.Part.createFormData(

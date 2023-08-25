@@ -7,8 +7,8 @@ import com.stebitto.uploadimages.actions.SelectedCountry
 import com.stebitto.uploadimages.actions.UploadImages
 import com.stebitto.uploadimages.datamodels.domain.AppImage
 import com.stebitto.uploadimages.datamodels.domain.UploadImageStatus
-import com.stebitto.uploadimages.sources.countries.CountryRepository
-import com.stebitto.uploadimages.sources.images.UploadImagesRepository
+import com.stebitto.uploadimages.sources.countries.ICountryRepository
+import com.stebitto.uploadimages.sources.images.IUploadImagesRepository
 import com.stebitto.uploadimages.states.AppState
 import com.stebitto.uploadimages.states.CountryState
 import com.stebitto.uploadimages.states.UploadImagesState
@@ -27,9 +27,10 @@ import javax.inject.Singleton
 @OptIn(ExperimentalCoroutinesApi::class)
 @Singleton
 class AppStateMachine @Inject constructor(
-    private val countryRepository: CountryRepository,
-    private val uploadImagesRepository: UploadImagesRepository
-) : FlowReduxStateMachine<AppState, Action>(initialState = CountryState.Loading) {
+    private val countryRepository: ICountryRepository,
+    private val uploadImagesRepository: IUploadImagesRepository,
+    initialState: AppState = CountryState.Loading
+) : FlowReduxStateMachine<AppState, Action>(initialState = initialState) {
 
     init {
         spec {
