@@ -12,11 +12,11 @@ import com.stebitto.uploadimages.sources.images.UploadImagesRepository
 import com.stebitto.uploadimages.states.AppState
 import com.stebitto.uploadimages.states.CountryState
 import com.stebitto.uploadimages.states.UploadImagesState
-import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.flow.receiveAsFlow
 import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -81,21 +81,41 @@ class AppStateMachine @Inject constructor(
             }
 
             inState<UploadImagesState.UploadingImages> {
-                onEnter { state ->
-                    // parallel uploads with coroutines
-                    val deferredList = mutableListOf<Deferred<AppImage>>()
-                    state.snapshot.uploadingImages.forEach { image ->
-                        val deferred = coroutineScope { async { uploadImage(image) } }
-                        deferredList.add(deferred)
-                    }
-                    // get upload results and append them to current list
-                    val uploadedImages = state.snapshot.uploadedImages + deferredList.awaitAll()
+                // buffered channel to store uploaded image
+                val channel = Channel<AppImage>(capacity = Channel.BUFFERED)
 
-                    state.override {
-                        UploadImagesState.PickImages(
-                            uploadedImages = uploadedImages,
-                            imagesToUpload = emptyList()
-                        )
+                // channel producer
+                onEnterEffect { stateSnapshot ->
+                    // parallel uploads with coroutines
+                    coroutineScope {
+                        stateSnapshot.uploadingImages.forEach { image ->
+                            val deferred = async { uploadImage(image) }.await()
+                            // as soon as upload completes, send it to the channel
+                            channel.send(deferred)
+                        }
+                    }
+                }
+
+                // channel consumer
+                collectWhileInState(channel.receiveAsFlow()) { uploadedImage, state ->
+                    val imageToReplace = state.snapshot.uploadingImages.find { it.id == uploadedImage.id }!!
+                    // remove element from images that needs to be uploaded yet
+                    val newUploadingImages = state.snapshot.uploadingImages.toMutableList().apply {
+                        remove(imageToReplace)
+                    }
+                    // and place it in uploaded images list
+                    val newUploadedImages = state.snapshot.uploadedImages.toMutableList().apply {
+                        add(uploadedImage)
+                    }
+
+                    if (newUploadingImages.isEmpty()) { // if there are no more images to upload, change state
+                        state.override {
+                            UploadImagesState.PickImages(uploadedImages = newUploadedImages, imagesToUpload = emptyList())
+                        }
+                    } else {
+                        state.mutate {
+                            copy(uploadedImages = newUploadedImages, uploadingImages = newUploadingImages)
+                        }
                     }
                 }
             }
