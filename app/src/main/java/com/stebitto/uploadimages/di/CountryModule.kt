@@ -19,21 +19,8 @@ import retrofit2.converter.moshi.MoshiConverterFactory
 object CountryModule {
 
     @Provides
-    fun provideAppState(): AppState = CountryState.Loading
-
-    @Provides
     fun provideCountryRepository(countryService: CountryService): ICountryRepository =
         CountryRepository(countryService)
-
-    @Provides
-    fun provideLoggingHttpClient(): OkHttpClient {
-        val loggingInterceptor = HttpLoggingInterceptor()
-            .apply { level = HttpLoggingInterceptor.Level.NONE }
-
-        return OkHttpClient.Builder()
-            .addInterceptor(loggingInterceptor)
-            .build()
-    }
 
     @Provides
     fun provideCountryService(okHttpClient: OkHttpClient): CountryService =
