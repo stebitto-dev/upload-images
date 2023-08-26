@@ -173,7 +173,10 @@ fun UploadImagesApp(
                         modifier = Modifier.fillMaxSize(),
                         onCountrySelect = {
                             viewModel.dispatch(SelectedCountry(it))
-                            navHostController.navigate(UploadImagesScreen.UploadImages.name)
+                            navHostController.navigate(UploadImagesScreen.UploadImages.name) {
+                                // remove Countries screen from back stack
+                                popUpTo(UploadImagesScreen.Countries.name) { inclusive = true }
+                            }
                         },
                         onRetry = {
                             viewModel.dispatch(RetryLoadingCountries)

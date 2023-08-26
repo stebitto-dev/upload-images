@@ -2,7 +2,6 @@ package com.stebitto.uploadimages.di
 
 import com.stebitto.uploadimages.states.AppState
 import com.stebitto.uploadimages.states.CountryState
-import com.stebitto.uploadimages.ui.Navigator
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn

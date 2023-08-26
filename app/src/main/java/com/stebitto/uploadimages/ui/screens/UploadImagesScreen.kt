@@ -108,7 +108,6 @@ fun UploadImagesScreen(
                     onItemClick = onUploadedImageClick
                 )
         }
-
         is UploadImagesState.UploadingImages -> {
             UploadImagesList(
                 images = uiState.uploadedImages + uiState.uploadingImages,
