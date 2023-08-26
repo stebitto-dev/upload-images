@@ -8,5 +8,5 @@ sealed interface CountryState : AppState {
 
     data class CountryList(val countries: List<Country>) : CountryState
 
-    data class Error(val message: String?) : CountryState
+    data class Error(val message: String? = null) : CountryState
 }

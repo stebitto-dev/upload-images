@@ -37,6 +37,7 @@ import com.stebitto.uploadimages.GOOGLE_PHOTO_PACKAGE_NAME
 import com.stebitto.uploadimages.PICK_IMAGES_MAX_NUMBER
 import com.stebitto.uploadimages.R
 import com.stebitto.uploadimages.actions.PickedImages
+import com.stebitto.uploadimages.actions.RetryLoadingCountries
 import com.stebitto.uploadimages.actions.SelectedCountry
 import com.stebitto.uploadimages.actions.UploadImages
 import com.stebitto.uploadimages.copyTextToClipboard
@@ -169,11 +170,14 @@ fun UploadImagesApp(
                 if (uiState.value is CountryState) { // for extra security, compose only with proper state
                     CountryScreen(
                         uiState = uiState.value as CountryState,
+                        modifier = Modifier.fillMaxSize(),
                         onCountrySelect = {
                             viewModel.dispatch(SelectedCountry(it))
                             navHostController.navigate(UploadImagesScreen.UploadImages.name)
                         },
-                        modifier = Modifier.fillMaxSize()
+                        onRetry = {
+                            viewModel.dispatch(RetryLoadingCountries)
+                        }
                     )
                 }
             }

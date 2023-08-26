@@ -3,6 +3,9 @@
     <string name="title_screen_countries">Seleziona il tuo paese</string>
     <string name="title_screen_upload_images">Carica immagini</string>
 
+    <string name="country_list_retry_description">Riprova</string>
+    <string name="country_list_retry_text">Riprova</string>
+
     <string name="upload_images_empty_list">Seleziona immagini dalla barra in basso</string>
     <string name="upload_images_copy_text_description">Copia url</string>
     <string name="upload_images_error_description">Errore durante il caricamento dell\'immagine</string>

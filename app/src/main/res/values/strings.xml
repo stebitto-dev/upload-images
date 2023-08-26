@@ -4,6 +4,9 @@
     <string name="title_screen_countries">Select your country</string>
     <string name="title_screen_upload_images">Upload images</string>
 
+    <string name="country_list_retry_description">Retry</string>
+    <string name="country_list_retry_text">Retry</string>
+
     <string name="upload_images_empty_list">Pick images from bottom bar</string>
     <string name="upload_images_copy_text_description">Copy url</string>
     <string name="upload_images_error_description">Error during image upload</string>

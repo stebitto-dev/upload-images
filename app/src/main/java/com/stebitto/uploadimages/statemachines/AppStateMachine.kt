@@ -1,8 +1,11 @@
 package com.stebitto.uploadimages.statemachines
 
+import com.freeletics.flowredux.dsl.ChangedState
 import com.freeletics.flowredux.dsl.FlowReduxStateMachine
+import com.freeletics.flowredux.dsl.State
 import com.stebitto.uploadimages.actions.Action
 import com.stebitto.uploadimages.actions.PickedImages
+import com.stebitto.uploadimages.actions.RetryLoadingCountries
 import com.stebitto.uploadimages.actions.SelectedCountry
 import com.stebitto.uploadimages.actions.UploadImages
 import com.stebitto.uploadimages.datamodels.domain.AppImage
@@ -35,13 +38,12 @@ class AppStateMachine @Inject constructor(
     init {
         spec {
             inState<CountryState.Loading> {
-                onEnter { state ->
-                    try {
-                        val countries = countryRepository.getCountries()
-                        state.override { CountryState.CountryList(countries) }
-                    } catch (e: Exception) {
-                        state.override { CountryState.Error(e.localizedMessage) }
-                    }
+                onEnter { state -> loadCountriesAndMoveToCountryListOrError(state) }
+            }
+
+            inState<CountryState.Error> {
+                on<RetryLoadingCountries> { _, state ->
+                    state.override { CountryState.Loading }
                 }
             }
 
@@ -124,8 +126,17 @@ class AppStateMachine @Inject constructor(
     }
 
     // Pure functions similar to reducers
-    private suspend fun uploadImage(imageToUpload: AppImage): AppImage =
-        try {
+    private suspend fun loadCountriesAndMoveToCountryListOrError(state: State<CountryState.Loading>): ChangedState<AppState> {
+        return try {
+            val countries = countryRepository.getCountries()
+            state.override { CountryState.CountryList(countries) }
+        } catch (e: Exception) {
+            state.override { CountryState.Error(e.localizedMessage) }
+        }
+    }
+
+    private suspend fun uploadImage(imageToUpload: AppImage): AppImage {
+        return try {
             val url = uploadImagesRepository.uploadImage(imageToUpload.contentUri)
             imageToUpload.copy(
                 status = UploadImageStatus.UPLOADED,
@@ -134,4 +145,5 @@ class AppStateMachine @Inject constructor(
         } catch (e: Exception) {
             imageToUpload.copy(status = UploadImageStatus.ERROR)
         }
+    }
 }
