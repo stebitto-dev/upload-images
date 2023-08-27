@@ -155,7 +155,15 @@ fun UploadImagesApp(
                             }
                         }
                     },
-                    onFABClick = { viewModel.dispatch(UploadImages) }
+                    onFABClick = {
+                        if ((uiState as UploadImagesState.PickImages).imagesToUpload.isEmpty()) {
+                            coroutineScope.launch {
+                                snackbarHostState.showSnackbar(context.getString(R.string.upload_images_no_images_to_upload))
+                            }
+                        } else {
+                            viewModel.dispatch(UploadImages)
+                        }
+                    }
                 )
             }
         },
