@@ -113,7 +113,7 @@ fun UploadImagesApp(
                 // get list of uris from result
                 result.data?.clipData?.let {
                     val uriList = mutableListOf<Uri>()
-                    for (i in 0..it.itemCount) {
+                    for (i in 0 until it.itemCount) {
                         uriList.add(it.getItemAt(i).uri)
                     }
                     viewModel.dispatch(PickedImages(uriList))
