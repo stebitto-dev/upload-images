@@ -8,6 +8,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.StringRes
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -74,6 +75,7 @@ fun UploadImagesApp(
     navHostController: NavHostController = rememberNavController()
 ) {
     val context = LocalContext.current
+    val uiState by viewModel.state.collectAsStateWithLifecycle()
 
     // Get current screen
     val backStackEntry by navHostController.currentBackStackEntryAsState()
@@ -133,7 +135,7 @@ fun UploadImagesApp(
     Scaffold(
         topBar = { TopBar(currentScreen = currentScreen) },
         bottomBar = {
-            if (currentScreen == UploadImagesScreen.UploadImages) {
+            AnimatedVisibility (visible = uiState is UploadImagesState.PickImages) {
                 UploadImagesBottomBar(
                     onGalleryClick = {
                         launcherGallery.launch(
@@ -159,17 +161,15 @@ fun UploadImagesApp(
         },
         snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { contentPadding ->
-        val uiState = viewModel.state.collectAsStateWithLifecycle()
-
         NavHost(
             navController = navHostController,
             startDestination = UploadImagesScreen.Countries.name,
             modifier = Modifier.padding(contentPadding)
         ) {
             composable(route = UploadImagesScreen.Countries.name) {
-                if (uiState.value is CountryState) { // for extra security, compose only with proper state
+                if (uiState is CountryState) { // for extra security, compose only with proper state
                     CountryScreen(
-                        uiState = uiState.value as CountryState,
+                        uiState = uiState as CountryState,
                         modifier = Modifier.fillMaxSize(),
                         onCountrySelect = {
                             viewModel.dispatch(SelectedCountry(it))
@@ -185,9 +185,9 @@ fun UploadImagesApp(
                 }
             }
             composable(route = UploadImagesScreen.UploadImages.name) {
-                if (uiState.value is UploadImagesState) { // for extra security, compose only with proper state
+                if (uiState is UploadImagesState) { // for extra security, compose only with proper state
                     UploadImagesScreen(
-                        uiState = uiState.value as UploadImagesState,
+                        uiState = uiState as UploadImagesState,
                         modifier = Modifier.fillMaxSize(),
                         onUploadedImageClick = { uploadedImage ->
                             uploadedImage.url?.let { // if url is not populated, image is not uploaded yet
