@@ -5,6 +5,7 @@ import com.freeletics.flowredux.dsl.FlowReduxStateMachine
 import com.freeletics.flowredux.dsl.State
 import com.stebitto.uploadimages.actions.Action
 import com.stebitto.uploadimages.actions.PickedImages
+import com.stebitto.uploadimages.actions.RemoveImage
 import com.stebitto.uploadimages.actions.RetryLoadingCountries
 import com.stebitto.uploadimages.actions.SelectedCountry
 import com.stebitto.uploadimages.actions.UploadImages
@@ -66,6 +67,23 @@ class AppStateMachine @Inject constructor(
                     val imagesToUpload = state.snapshot.imagesToUpload + newImagesList
                     // update current list without changing state
                     state.mutate { copy(imagesToUpload = imagesToUpload) }
+                }
+
+                on<RemoveImage> { action, state ->
+                    // check uploadedImages for image to remove
+                    val removeImage = state.snapshot.uploadedImages.find { it.id == action.image.id }
+                    if (removeImage != null) {
+                        val newUploadedImages = state.snapshot.uploadedImages.toMutableList().apply {
+                            remove(removeImage)
+                        }
+                        state.mutate { (copy(uploadedImages = newUploadedImages)) }
+                    } else {
+                        // check imagesToUpload for image to remove
+                        val newImagesToUpload = state.snapshot.imagesToUpload.toMutableList().apply {
+                            remove(find { it.id == action.image.id }!!)
+                        }
+                        state.mutate { copy(imagesToUpload = newImagesToUpload) }
+                    }
                 }
 
                 on<UploadImages> { _, state ->

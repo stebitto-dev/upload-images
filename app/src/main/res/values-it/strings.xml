@@ -7,8 +7,9 @@
     <string name="country_list_retry_text">Riprova</string>
 
     <string name="upload_images_empty_list">Seleziona immagini dalla barra in basso</string>
-    <string name="upload_images_copy_text_description">Copia url</string>
     <string name="upload_images_no_images_to_upload">Nessuna immagine da caricare</string>
+    <string name="upload_images_copy_text_description">Copia url</string>
+    <string name="upload_images_remove_image_description">Rimuovi immagine</string>
     <string name="upload_images_error_description">Errore durante il caricamento dell\'immagine</string>
 
     <string name="bottom_bar_gallery_description">Seleziona immagini dalla galleria</string>

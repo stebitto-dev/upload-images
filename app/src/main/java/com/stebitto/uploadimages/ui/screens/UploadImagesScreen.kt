@@ -7,16 +7,19 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.CircularProgressIndicator
@@ -94,7 +97,8 @@ fun UploadImagesBottomBar(
 fun UploadImagesScreen(
     uiState: UploadImagesState,
     modifier: Modifier,
-    onUploadedImageClick: (AppImage) -> Unit
+    onCopyClick: (AppImage) -> Unit,
+    onRemoveClick: (AppImage) -> Unit
 ) {
     when (uiState) {
         is UploadImagesState.PickImages -> {
@@ -105,14 +109,16 @@ fun UploadImagesScreen(
                 UploadImagesList(
                     images = imageList,
                     modifier = modifier,
-                    onItemClick = onUploadedImageClick
+                    onCopyClick = onCopyClick,
+                    onRemoveClick = onRemoveClick
                 )
         }
         is UploadImagesState.UploadingImages -> {
             UploadImagesList(
                 images = uiState.uploadedImages + uiState.uploadingImages,
                 modifier = modifier,
-                onItemClick = onUploadedImageClick
+                onCopyClick = onCopyClick,
+                showRemoveAction = false
             )
         }
     }
@@ -135,7 +141,9 @@ fun EmptyListLabel(modifier: Modifier = Modifier) {
 fun UploadImagesList(
     images: List<AppImage>,
     modifier: Modifier = Modifier,
-    onItemClick: (AppImage) -> Unit = {}
+    onCopyClick: (AppImage) -> Unit = {},
+    showRemoveAction: Boolean = true,
+    onRemoveClick: (AppImage) -> Unit = {}
 ) {
     Surface(modifier = modifier) {
         LazyVerticalGrid(
@@ -143,7 +151,12 @@ fun UploadImagesList(
             contentPadding = PaddingValues(all = 2.dp)
         ) {
             items(items = images) { image: AppImage ->
-                UploadedImageCard(appImage = image, onCopyClick = onItemClick)
+                UploadedImageCard(
+                    appImage = image,
+                    onCopyUrlClick = onCopyClick,
+                    showRemoveIcon = showRemoveAction,
+                    onRemoveImageClick = onRemoveClick
+                )
             }
         }
     }
@@ -152,11 +165,13 @@ fun UploadImagesList(
 @Composable
 fun UploadedImageCard(
     appImage: AppImage,
-    onCopyClick: (AppImage) -> Unit = {}
+    onCopyUrlClick: (AppImage) -> Unit = {},
+    showRemoveIcon: Boolean = true,
+    onRemoveImageClick: (AppImage) -> Unit = {}
 ) {
     Box(
         modifier = Modifier.padding(all = 2.dp),
-        contentAlignment = Alignment.BottomEnd
+        contentAlignment = Alignment.BottomCenter
     ) {
         AsyncImage(
             model = appImage.contentUri,
@@ -177,54 +192,81 @@ fun UploadedImageCard(
                 )
                 .height(60.dp)
                 .fillMaxSize(),
-            horizontalArrangement = Arrangement.End,
-            verticalAlignment = Alignment.Bottom
+            verticalAlignment = Alignment.Bottom,
+            horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            val overlayElementModifier = Modifier.size(26.dp).padding(all = 2.dp)
+            val overlayElementModifier = Modifier
+                .size(26.dp)
+                .padding(all = 2.dp)
             val overlayElementColor = MaterialTheme.colorScheme.background
 
-            IconButton(
-                onClick = { onCopyClick(appImage) },
-                modifier = Modifier.size(30.dp)
-            ) {
-                Icon(
-                    painter = painterResource(id = R.drawable.icon_content_copy),
-                    contentDescription = stringResource(id = R.string.upload_images_copy_text_description),
-                    modifier = overlayElementModifier,
-                    tint = overlayElementColor
-                )
-            }
-
-            when (appImage.status) {
-                UploadImageStatus.TO_UPLOAD -> {
+            if (showRemoveIcon) {
+                IconButton(
+                    onClick = { onRemoveImageClick(appImage) },
+                    modifier = Modifier.size(30.dp)
+                ) {
                     Icon(
-                        painter = painterResource(id = R.drawable.icon_cloud_off),
-                        contentDescription = null,
+                        imageVector = Icons.Default.Clear,
+                        contentDescription = stringResource(id = R.string.upload_images_remove_image_description),
                         modifier = overlayElementModifier,
                         tint = overlayElementColor
                     )
                 }
-                UploadImageStatus.IS_LOADING -> {
-                    CircularProgressIndicator(
-                        modifier = overlayElementModifier,
-                        color = overlayElementColor
-                    )
-                }
-                UploadImageStatus.UPLOADED -> {
+            } else {
+                Spacer(modifier = Modifier.width(1.dp))
+            }
+
+            Row(
+                verticalAlignment = Alignment.Bottom,
+                horizontalArrangement = Arrangement.End
+            ) {
+                IconButton(
+                    onClick = { onCopyUrlClick(appImage) },
+                    modifier = Modifier.size(30.dp),
+                    enabled = appImage.status == UploadImageStatus.UPLOADED
+                ) {
                     Icon(
-                        imageVector = Icons.Default.CheckCircle,
+                        painter = painterResource(id = R.drawable.icon_content_copy),
                         contentDescription = stringResource(id = R.string.upload_images_copy_text_description),
                         modifier = overlayElementModifier,
                         tint = overlayElementColor
                     )
                 }
-                UploadImageStatus.ERROR -> {
-                    Icon(
-                        imageVector = Icons.Default.Warning,
-                        contentDescription = stringResource(id = R.string.upload_images_error_description),
-                        modifier = overlayElementModifier,
-                        tint = overlayElementColor
-                    )
+
+                when (appImage.status) {
+                    UploadImageStatus.TO_UPLOAD -> {
+                        Icon(
+                            painter = painterResource(id = R.drawable.icon_cloud_off),
+                            contentDescription = null,
+                            modifier = overlayElementModifier,
+                            tint = overlayElementColor
+                        )
+                    }
+
+                    UploadImageStatus.IS_LOADING -> {
+                        CircularProgressIndicator(
+                            modifier = overlayElementModifier,
+                            color = overlayElementColor
+                        )
+                    }
+
+                    UploadImageStatus.UPLOADED -> {
+                        Icon(
+                            imageVector = Icons.Default.CheckCircle,
+                            contentDescription = stringResource(id = R.string.upload_images_copy_text_description),
+                            modifier = overlayElementModifier,
+                            tint = overlayElementColor
+                        )
+                    }
+
+                    UploadImageStatus.ERROR -> {
+                        Icon(
+                            imageVector = Icons.Default.Warning,
+                            contentDescription = stringResource(id = R.string.upload_images_error_description),
+                            modifier = overlayElementModifier,
+                            tint = overlayElementColor
+                        )
+                    }
                 }
             }
         }
@@ -269,6 +311,7 @@ fun UploadedImagesListPreview() {
                 contentUri = Uri.EMPTY,
                 status = UploadImageStatus.TO_UPLOAD
             )
-        })
+        },
+            showRemoveAction = false)
     }
 }

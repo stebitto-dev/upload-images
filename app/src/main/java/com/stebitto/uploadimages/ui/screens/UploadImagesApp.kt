@@ -38,6 +38,7 @@ import com.stebitto.uploadimages.GOOGLE_PHOTO_PACKAGE_NAME
 import com.stebitto.uploadimages.PICK_IMAGES_MAX_NUMBER
 import com.stebitto.uploadimages.R
 import com.stebitto.uploadimages.actions.PickedImages
+import com.stebitto.uploadimages.actions.RemoveImage
 import com.stebitto.uploadimages.actions.RetryLoadingCountries
 import com.stebitto.uploadimages.actions.SelectedCountry
 import com.stebitto.uploadimages.actions.UploadImages
@@ -197,7 +198,7 @@ fun UploadImagesApp(
                     UploadImagesScreen(
                         uiState = uiState as UploadImagesState,
                         modifier = Modifier.fillMaxSize(),
-                        onUploadedImageClick = { uploadedImage ->
+                        onCopyClick = { uploadedImage ->
                             uploadedImage.url?.let { // if url is not populated, image is not uploaded yet
                                 // copy url to clipboard
                                 if (!context.copyTextToClipboard(it)) {
@@ -210,7 +211,8 @@ fun UploadImagesApp(
                                     }
                                 }
                             }
-                        }
+                        },
+                        onRemoveClick = { viewModel.dispatch(RemoveImage(it)) }
                     )
                 }
             }
