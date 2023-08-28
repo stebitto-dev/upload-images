@@ -1,4 +1,4 @@
-package com.stebitto.uploadimages.ui.screens
+package com.stebitto.uploadimages.ui
 
 import android.app.Activity
 import android.content.ActivityNotFoundException
@@ -43,10 +43,13 @@ import com.stebitto.uploadimages.actions.RetryLoadingCountries
 import com.stebitto.uploadimages.actions.SelectedCountry
 import com.stebitto.uploadimages.actions.UploadImages
 import com.stebitto.uploadimages.copyTextToClipboard
+import com.stebitto.uploadimages.datamodels.domain.AppImage
 import com.stebitto.uploadimages.getTmpFileUri
 import com.stebitto.uploadimages.states.CountryState
 import com.stebitto.uploadimages.states.UploadImagesState
-import com.stebitto.uploadimages.ui.MainViewModel
+import com.stebitto.uploadimages.ui.screens.CountryScreen
+import com.stebitto.uploadimages.ui.screens.UploadImagesBottomBar
+import com.stebitto.uploadimages.ui.screens.UploadImagesScreen
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import java.util.UUID
@@ -90,7 +93,8 @@ fun UploadImagesApp(
     ) { uris ->
         if (uris.isNotEmpty()) {
             Timber.d("Number of items selected: ${uris.size}")
-            viewModel.dispatch(PickedImages(uris))
+            val images = uris.map { AppImage(contentUri = it) }
+            viewModel.dispatch(PickedImages(images))
         } else {
             Timber.d("No media selected")
         }
@@ -101,7 +105,8 @@ fun UploadImagesApp(
         rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) { pictureWasTaken ->
             if (pictureWasTaken) {
                 Timber.d("Picture saved at $cameraUri")
-                viewModel.dispatch(PickedImages(listOf(cameraUri)))
+                val images = listOf(AppImage(contentUri = cameraUri))
+                viewModel.dispatch(PickedImages(images))
             } else {
                 Timber.d("No picture taken from camera")
             }
@@ -113,11 +118,13 @@ fun UploadImagesApp(
                 Timber.d("Number of items selected: ${result.data?.clipData?.itemCount}")
                 // get list of uris from result
                 result.data?.clipData?.let {
-                    val uriList = mutableListOf<Uri>()
+                    val images = mutableListOf<AppImage>()
                     for (i in 0 until it.itemCount) {
-                        uriList.add(it.getItemAt(i).uri)
+                        images.add(
+                            AppImage(contentUri = it.getItemAt(i).uri)
+                        )
                     }
-                    viewModel.dispatch(PickedImages(uriList))
+                    viewModel.dispatch(PickedImages(images))
                 }
             } else {
                 Timber.d("No media selected")

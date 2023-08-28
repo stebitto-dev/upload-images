@@ -307,7 +307,6 @@ fun UploadedImagesListPreview() {
     UploadImagesTheme {
         UploadImagesList(List(10) {
             AppImage(
-                id = "",
                 contentUri = Uri.EMPTY,
                 status = UploadImageStatus.TO_UPLOAD
             )

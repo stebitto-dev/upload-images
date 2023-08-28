@@ -21,7 +21,6 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.receiveAsFlow
-import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -39,7 +38,9 @@ class AppStateMachine @Inject constructor(
     init {
         spec {
             inState<CountryState.Loading> {
-                onEnter { state -> loadCountriesAndMoveToCountryListOrError(state) }
+                onEnter { state ->
+                    loadCountriesAndMoveToCountryListOrError(state)
+                }
             }
 
             inState<CountryState.Error> {
@@ -56,17 +57,7 @@ class AppStateMachine @Inject constructor(
 
             inState<UploadImagesState.PickImages> {
                 on<PickedImages> { action, state ->
-                    // map uris into domain model objects
-                    val newImagesList = action.images.map { contentUri ->
-                        AppImage(
-                            id = UUID.randomUUID().toString(),
-                            contentUri = contentUri
-                        )
-                    }
-                    // append new picked images to current list
-                    val imagesToUpload = state.snapshot.imagesToUpload + newImagesList
-                    // update current list without changing state
-                    state.mutate { copy(imagesToUpload = imagesToUpload) }
+                    addNewImagesToCurrentState(action, state)
                 }
 
                 on<RemoveImage> { action, state ->
@@ -144,13 +135,24 @@ class AppStateMachine @Inject constructor(
     }
 
     // Pure functions similar to reducers
-    private suspend fun loadCountriesAndMoveToCountryListOrError(state: State<CountryState.Loading>): ChangedState<AppState> {
+    private suspend fun loadCountriesAndMoveToCountryListOrError(
+        state: State<CountryState.Loading>
+    ): ChangedState<AppState> {
         return try {
             val countries = countryRepository.getCountries()
             state.override { CountryState.CountryList(countries) }
         } catch (e: Exception) {
             state.override { CountryState.Error(e.localizedMessage) }
         }
+    }
+    private fun addNewImagesToCurrentState(
+        action: PickedImages,
+        state: State<UploadImagesState.PickImages>
+    ): ChangedState<AppState> {
+        // append new picked images to current list
+        val imagesToUpload = state.snapshot.imagesToUpload + action.images
+        // update current list without changing state
+        return state.mutate { copy(imagesToUpload = imagesToUpload) }
     }
 
     private suspend fun uploadImage(imageToUpload: AppImage): AppImage {
