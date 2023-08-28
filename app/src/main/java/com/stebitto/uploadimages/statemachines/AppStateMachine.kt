@@ -61,34 +61,11 @@ class AppStateMachine @Inject constructor(
                 }
 
                 on<RemoveImage> { action, state ->
-                    // check uploadedImages for image to remove
-                    val removeImage = state.snapshot.uploadedImages.find { it.id == action.image.id }
-                    if (removeImage != null) {
-                        val newUploadedImages = state.snapshot.uploadedImages.toMutableList().apply {
-                            remove(removeImage)
-                        }
-                        state.mutate { (copy(uploadedImages = newUploadedImages)) }
-                    } else {
-                        // check imagesToUpload for image to remove
-                        val newImagesToUpload = state.snapshot.imagesToUpload.toMutableList().apply {
-                            remove(find { it.id == action.image.id }!!)
-                        }
-                        state.mutate { copy(imagesToUpload = newImagesToUpload) }
-                    }
+                    removeImageFromCurrentState(action, state)
                 }
 
                 on<UploadImages> { _, state ->
-                    // update images status
-                    val uploadingImages =
-                        state.snapshot.imagesToUpload.map { it.copy(status = UploadImageStatus.IS_LOADING) }
-
-                    // change state to Uploading images
-                    state.override {
-                        UploadImagesState.UploadingImages(
-                            uploadedImages = state.snapshot.uploadedImages,
-                            uploadingImages = uploadingImages
-                        )
-                    }
+                    prepareListAndMoveToUploadingImages(state)
                 }
             }
 
@@ -153,6 +130,42 @@ class AppStateMachine @Inject constructor(
         val imagesToUpload = state.snapshot.imagesToUpload + action.images
         // update current list without changing state
         return state.mutate { copy(imagesToUpload = imagesToUpload) }
+    }
+
+    private fun removeImageFromCurrentState(
+        action: RemoveImage,
+        state: State<UploadImagesState.PickImages>
+    ): ChangedState<AppState> {
+        // check uploadedImages for image to remove
+        val removeImage = state.snapshot.uploadedImages.find { it.id == action.image.id }
+        return if (removeImage != null) {
+            val newUploadedImages = state.snapshot.uploadedImages.toMutableList().apply {
+                remove(removeImage)
+            }
+            state.mutate { (copy(uploadedImages = newUploadedImages)) }
+        } else {
+            // check imagesToUpload for image to remove
+            val newImagesToUpload = state.snapshot.imagesToUpload.toMutableList().apply {
+                remove(find { it.id == action.image.id }!!)
+            }
+            state.mutate { copy(imagesToUpload = newImagesToUpload) }
+        }
+    }
+
+    private fun prepareListAndMoveToUploadingImages(
+        state: State<UploadImagesState.PickImages>
+    ): ChangedState<AppState> {
+        // update images status
+        val uploadingImages =
+            state.snapshot.imagesToUpload.map { it.copy(status = UploadImageStatus.IS_LOADING) }
+
+        // change state to Uploading images
+        return state.override {
+            UploadImagesState.UploadingImages(
+                uploadedImages = state.snapshot.uploadedImages,
+                uploadingImages = uploadingImages
+            )
+        }
     }
 
     private suspend fun uploadImage(imageToUpload: AppImage): AppImage {
