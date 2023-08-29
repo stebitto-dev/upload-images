@@ -19,6 +19,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -28,12 +29,16 @@ import com.stebitto.uploadimages.datamodels.domain.Country
 import com.stebitto.uploadimages.states.CountryState
 import com.stebitto.uploadimages.ui.theme.UploadImagesTheme
 
+const val TEST_TAG_LOADER = "Loader"
+const val TEST_TAG_ERROR_BUTTON = "Error button"
+const val TEST_TAG_COUNTRY_LIST = "Country list"
+
 @Composable
 fun CountryScreen(
     uiState: CountryState,
-    modifier: Modifier,
-    onCountrySelect: (Country) -> Unit,
-    onRetry: () -> Unit
+    modifier: Modifier = Modifier,
+    onCountrySelect: (Country) -> Unit = {},
+    onRetry: () -> Unit = {}
 ) {
     when (uiState) {
         is CountryState.Loading -> {
@@ -64,6 +69,7 @@ fun CountryLoading(
         contentAlignment = Alignment.Center
     ) {
         CircularProgressIndicator(
+            modifier = Modifier.testTag(TEST_TAG_LOADER),
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
     }
@@ -79,7 +85,8 @@ fun CountryError(
         contentAlignment = Alignment.Center
     ) {
         Button(
-            onClick = { onRetryClick() }
+            onClick = { onRetryClick() },
+            modifier = Modifier.testTag(TEST_TAG_ERROR_BUTTON)
         ) {
             Icon(
                 imageVector = Icons.Default.Refresh,
@@ -101,7 +108,7 @@ fun CountryList(
     onCountrySelect: (Country) -> Unit = {}
 ) {
     LazyColumn(
-        modifier = modifier,
+        modifier = modifier.testTag(TEST_TAG_COUNTRY_LIST),
         contentPadding = PaddingValues(vertical = 10.dp)
     ) {
         itemsIndexed(items = countries) { index, country ->
