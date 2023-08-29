@@ -30,15 +30,3 @@ fun Context.copyTextToClipboard(textToCopy: String): Boolean {
 
     return Build.VERSION.SDK_INT > Build.VERSION_CODES.S_V2
 }
-
-//fun Context.getBitmap(uri: Uri): Bitmap {
-//    val decoder = ImageDecoder.createSource(contentResolver, uri)
-//    return ImageDecoder.decodeBitmap(decoder)
-//}
-
-//fun Bitmap.encodeImage(): String {
-//    val outputStream = ByteArrayOutputStream()
-//    compress(Bitmap.CompressFormat.JPEG, 10, outputStream)
-//    val b = outputStream.toByteArray()
-//    return Base64.encodeToString(b, Base64.DEFAULT)
-//}
