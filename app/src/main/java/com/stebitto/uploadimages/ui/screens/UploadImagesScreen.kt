@@ -35,6 +35,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -45,6 +46,10 @@ import com.stebitto.uploadimages.datamodels.domain.AppImage
 import com.stebitto.uploadimages.datamodels.domain.UploadImageStatus
 import com.stebitto.uploadimages.states.UploadImagesState
 import com.stebitto.uploadimages.ui.theme.UploadImagesTheme
+
+const val TEST_TAG_EMPTY_LABEL = "Empty label"
+const val TEST_TAG_IMAGE_CARD = "Images list"
+const val TEST_TAG_IMAGE_CARD_REMOVE_ACTION = "Remove action"
 
 @Composable
 fun UploadImagesFAB(onClick: () -> Unit) {
@@ -96,9 +101,9 @@ fun UploadImagesBottomBar(
 @Composable
 fun UploadImagesScreen(
     uiState: UploadImagesState,
-    modifier: Modifier,
-    onCopyClick: (AppImage) -> Unit,
-    onRemoveClick: (AppImage) -> Unit
+    modifier: Modifier = Modifier,
+    onCopyClick: (AppImage) -> Unit = {},
+    onRemoveClick: (AppImage) -> Unit = {}
 ) {
     when (uiState) {
         is UploadImagesState.PickImages -> {
@@ -127,7 +132,7 @@ fun UploadImagesScreen(
 @Composable
 fun EmptyListLabel(modifier: Modifier = Modifier) {
     Box(
-        modifier = modifier,
+        modifier = modifier.testTag(TEST_TAG_EMPTY_LABEL),
         contentAlignment = Alignment.Center
     ) {
         Text(
@@ -170,7 +175,9 @@ fun UploadedImageCard(
     onRemoveImageClick: (AppImage) -> Unit = {}
 ) {
     Box(
-        modifier = Modifier.padding(all = 2.dp),
+        modifier = Modifier
+            .padding(all = 2.dp)
+            .testTag(TEST_TAG_IMAGE_CARD),
         contentAlignment = Alignment.BottomCenter
     ) {
         AsyncImage(
@@ -203,7 +210,9 @@ fun UploadedImageCard(
             if (showRemoveIcon) {
                 IconButton(
                     onClick = { onRemoveImageClick(appImage) },
-                    modifier = Modifier.size(30.dp)
+                    modifier = Modifier
+                        .size(30.dp)
+                        .testTag(TEST_TAG_IMAGE_CARD_REMOVE_ACTION)
                 ) {
                     Icon(
                         imageVector = Icons.Default.Clear,
