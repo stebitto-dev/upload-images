@@ -87,55 +87,9 @@ fun UploadImagesApp(
         backStackEntry?.destination?.route ?: UploadImagesScreen.Countries.name
     )
 
-    // Launch photo picker in multi-select mode
-    val launcherGallery = rememberLauncherForActivityResult(
-        ActivityResultContracts.PickMultipleVisualMedia(PICK_IMAGES_MAX_NUMBER)
-    ) { uris ->
-        if (uris.isNotEmpty()) {
-            Timber.d("Number of items selected: ${uris.size}")
-            val images = uris.map { AppImage(contentUri = it) }
-            viewModel.dispatch(PickedImages(images))
-        } else {
-            Timber.d("No media selected")
-        }
-    }
-    // Launch camera
-    var cameraUri: Uri = Uri.EMPTY
-    val launcherCamera =
-        rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) { pictureWasTaken ->
-            if (pictureWasTaken) {
-                Timber.d("Picture saved at $cameraUri")
-                val images = listOf(AppImage(contentUri = cameraUri))
-                viewModel.dispatch(PickedImages(images))
-            } else {
-                Timber.d("No picture taken from camera")
-            }
-        }
-    // Launch Google Photo
-    val launcherGooglePhoto =
-        rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-            if (result.resultCode == Activity.RESULT_OK) {
-                Timber.d("Number of items selected: ${result.data?.clipData?.itemCount}")
-                // get list of uris from result
-                result.data?.clipData?.let {
-                    val images = mutableListOf<AppImage>()
-                    for (i in 0 until it.itemCount) {
-                        images.add(
-                            AppImage(contentUri = it.getItemAt(i).uri)
-                        )
-                    }
-                    viewModel.dispatch(PickedImages(images))
-                }
-            } else {
-                Timber.d("No media selected")
-            }
-        }
-    val googlePhotoIntent = Intent().apply {
-        action = Intent.ACTION_PICK
-        type = "image/*"
-        `package` = GOOGLE_PHOTO_PACKAGE_NAME
-        putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
-    }
+    val launcherGallery = getGalleryLauncher { images -> viewModel.dispatch(PickedImages(images)) }
+    val launcherCamera = getCameraLauncher { picture -> viewModel.dispatch(PickedImages(listOf(picture))) }
+    val launcherGooglePhoto = getGooglePhotoLauncher { images -> viewModel.dispatch(PickedImages(images)) }
 
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
@@ -225,4 +179,64 @@ fun UploadImagesApp(
             }
         }
     }
+}
+
+
+// Photo picker launcher in multi-select mode
+@Composable
+private fun getGalleryLauncher(
+    onImagesPicked: (List<AppImage>) -> Unit
+) = rememberLauncherForActivityResult(
+    ActivityResultContracts.PickMultipleVisualMedia(PICK_IMAGES_MAX_NUMBER)
+) { uris ->
+    if (uris.isNotEmpty()) {
+        Timber.d("Number of items selected: ${uris.size}")
+        val images = uris.map { AppImage(contentUri = it) }
+        onImagesPicked(images)
+    } else {
+        Timber.d("No media selected")
+    }
+}
+
+// Camera launcher
+private var cameraUri: Uri = Uri.EMPTY
+@Composable
+private fun getCameraLauncher(
+    onPictureTaken: (AppImage) -> Unit
+) = rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) { pictureWasTaken ->
+    if (pictureWasTaken) {
+        Timber.d("Picture saved at $cameraUri")
+        onPictureTaken(AppImage(contentUri = cameraUri))
+    } else {
+        Timber.d("No picture taken from camera")
+    }
+}
+
+// Google Photo launcher
+@Composable
+private fun getGooglePhotoLauncher(
+    onImagesPicked: (List<AppImage>) -> Unit
+) = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+    if (result.resultCode == Activity.RESULT_OK) {
+        Timber.d("Number of items selected: ${result.data?.clipData?.itemCount}")
+        // get list of uris from result
+        result.data?.clipData?.let {
+            val images = mutableListOf<AppImage>()
+            for (i in 0 until it.itemCount) {
+                images.add(
+                    AppImage(contentUri = it.getItemAt(i).uri)
+                )
+            }
+            onImagesPicked(images)
+        }
+    } else {
+        Timber.d("No media selected")
+    }
+}
+
+private val googlePhotoIntent = Intent().apply {
+    action = Intent.ACTION_PICK
+    type = "image/*"
+    `package` = GOOGLE_PHOTO_PACKAGE_NAME
+    putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
 }
