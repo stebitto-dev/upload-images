@@ -74,38 +74,13 @@ class AppStateMachine @Inject constructor(
                 val channel = Channel<AppImage>(capacity = Channel.BUFFERED)
 
                 // channel producer
-                onEnterEffect { stateSnapshot ->
-                    // parallel uploads with coroutines
-                    coroutineScope {
-                        stateSnapshot.uploadingImages.forEach { image ->
-                            val deferred = async { uploadImage(image) }.await()
-                            // as soon as upload completes, send it to the channel
-                            channel.send(deferred)
-                        }
-                    }
+                onEnter { state ->
+                    uploadImageAndSendToChannel(state) { channel.send(it) }
                 }
 
                 // channel consumer
                 collectWhileInState(channel.receiveAsFlow()) { uploadedImage, state ->
-                    val imageToReplace = state.snapshot.uploadingImages.find { it.id == uploadedImage.id }!!
-                    // remove element from images that needs to be uploaded yet
-                    val newUploadingImages = state.snapshot.uploadingImages.toMutableList().apply {
-                        remove(imageToReplace)
-                    }
-                    // and place it in uploaded images list
-                    val newUploadedImages = state.snapshot.uploadedImages.toMutableList().apply {
-                        add(uploadedImage)
-                    }
-
-                    if (newUploadingImages.isEmpty()) { // if there are no more images to upload, change state
-                        state.override {
-                            UploadImagesState.PickImages(uploadedImages = newUploadedImages, imagesToUpload = emptyList())
-                        }
-                    } else {
-                        state.mutate {
-                            copy(uploadedImages = newUploadedImages, uploadingImages = newUploadingImages)
-                        }
-                    }
+                    receiveUploadedImageAndUpdateState(uploadedImage, state)
                 }
             }
         }
@@ -122,6 +97,7 @@ class AppStateMachine @Inject constructor(
             state.override { CountryState.Error(e.localizedMessage) }
         }
     }
+
     private fun addNewImagesToCurrentState(
         action: PickedImages,
         state: State<UploadImagesState.PickImages>
@@ -165,6 +141,53 @@ class AppStateMachine @Inject constructor(
                 uploadedImages = state.snapshot.uploadedImages,
                 uploadingImages = uploadingImages
             )
+        }
+    }
+
+    private suspend fun uploadImageAndSendToChannel(
+        state: State<UploadImagesState.UploadingImages>,
+        sendToChannel: suspend (AppImage) -> Unit
+    ): ChangedState<AppState> {
+        return if (state.snapshot.uploadingImages.isEmpty()) {
+            // if there are no images to upload, reset state
+            // this situation should not happen anyway
+            state.override { UploadImagesState.PickImages() }
+        } else {
+            coroutineScope {
+                // parallel uploads with coroutines
+                state.snapshot.uploadingImages.forEach { image ->
+                    val uploadedImage = async { uploadImage(image) }.await()
+                    // as soon as upload completes, send image to the channel
+                    sendToChannel(uploadedImage)
+                }
+            }
+            // no need to change state, collectWhileInState will take care of that
+            state.noChange()
+        }
+    }
+
+    private fun receiveUploadedImageAndUpdateState(
+        uploadedImage: AppImage,
+        state: State<UploadImagesState.UploadingImages>
+    ): ChangedState<AppState> {
+        val imageToReplace = state.snapshot.uploadingImages.find { it.id == uploadedImage.id }!!
+        // remove element from images that needs to be uploaded yet
+        val newUploadingImages = state.snapshot.uploadingImages.toMutableList().apply {
+            remove(imageToReplace)
+        }
+        // and place it in uploaded images list
+        val newUploadedImages = state.snapshot.uploadedImages.toMutableList().apply {
+            add(uploadedImage)
+        }
+
+        return if (newUploadingImages.isEmpty()) { // if there are no more images to upload, change state
+            state.override {
+                UploadImagesState.PickImages(uploadedImages = newUploadedImages, imagesToUpload = emptyList())
+            }
+        } else {
+            state.mutate {
+                copy(uploadedImages = newUploadedImages, uploadingImages = newUploadingImages)
+            }
         }
     }
 

@@ -108,10 +108,10 @@ class AppStateMachineTest {
 
     @Test
     fun `add new images to upload with PickedImages action without changing state (populated state)`() = runTest {
-        val currentList = List(5) { AppImage(contentUri = Uri.parse("")) }
-        val initialState = UploadImagesState.PickImages(imagesToUpload = currentList)
+        val initialList = List(5) { AppImage(contentUri = Uri.parse("")) }
+        val initialState = UploadImagesState.PickImages(imagesToUpload = initialList)
         val pickedImages = List(3) { AppImage(contentUri = Uri.parse("")) }
-        val pickedImageState = UploadImagesState.PickImages(imagesToUpload = currentList + pickedImages)
+        val pickedImageState = UploadImagesState.PickImages(imagesToUpload = initialList + pickedImages)
 
         val appStateMachine = AppStateMachine(
             fakeCountriesRepository,
@@ -131,10 +131,10 @@ class AppStateMachineTest {
 
     @Test
     fun `remove image from images to upload with RemoveImage action without changing state`() = runTest {
-        val currentList = List(5) { AppImage(contentUri = Uri.parse("")) }
-        val initialState = UploadImagesState.PickImages(imagesToUpload = currentList)
-        val imageToRemove = currentList.first()
-        val expectedList = currentList.toMutableList().apply { remove(imageToRemove) }
+        val initialList = List(5) { AppImage(contentUri = Uri.parse("")) }
+        val initialState = UploadImagesState.PickImages(imagesToUpload = initialList)
+        val imageToRemove = initialList.first()
+        val expectedList = initialList.toMutableList().apply { remove(imageToRemove) }
         val removedImageState = UploadImagesState.PickImages(imagesToUpload = expectedList)
 
         val appStateMachine = AppStateMachine(
@@ -155,10 +155,10 @@ class AppStateMachineTest {
 
     @Test
     fun `remove image from uploaded images with RemoveImage action without changing state`() = runTest {
-        val currentList = List(5) { AppImage(contentUri = Uri.parse("")) }
-        val initialState = UploadImagesState.PickImages(uploadedImages = currentList)
-        val imageToRemove = currentList.first()
-        val expectedList = currentList.toMutableList().apply { remove(imageToRemove) }
+        val initialList = List(5) { AppImage(contentUri = Uri.parse("")) }
+        val initialState = UploadImagesState.PickImages(uploadedImages = initialList)
+        val imageToRemove = initialList.first()
+        val expectedList = initialList.toMutableList().apply { remove(imageToRemove) }
         val removedImageState = UploadImagesState.PickImages(uploadedImages = expectedList)
 
         val appStateMachine = AppStateMachine(
@@ -179,10 +179,10 @@ class AppStateMachineTest {
 
     @Test
     fun `move to UploadingImages from PickImages on UploadImages action`() = runTest {
-        val currentList = List(5) { AppImage(contentUri = Uri.parse("")) }
-        val initialState = UploadImagesState.PickImages(imagesToUpload = currentList)
+        val initialList = List(5) { AppImage(contentUri = Uri.parse("")) }
+        val initialState = UploadImagesState.PickImages(imagesToUpload = initialList)
         val uploadingImagesState =
-            UploadImagesState.UploadingImages(uploadingImages = currentList.map { it.copy(status = UploadImageStatus.IS_LOADING) })
+            UploadImagesState.UploadingImages(uploadingImages = initialList.map { it.copy(status = UploadImageStatus.IS_LOADING) })
 
         val appStateMachine = AppStateMachine(
             fakeCountriesRepository,
@@ -199,6 +199,48 @@ class AppStateMachineTest {
             assertEquals(uploadingImagesState, awaitItem())
             // ignore following state
             cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `move to PickImages from UploadImages on all image upload completion`() = runTest {
+        val initialList = List(3) { AppImage(contentUri = Uri.parse(""), url = "") }
+        val initialState = UploadImagesState.UploadingImages(uploadingImages = initialList)
+        val uploadedImageState =
+            UploadImagesState.PickImages(uploadedImages = initialList.map { it.copy(status = UploadImageStatus.UPLOADED) })
+
+        val appStateMachine = AppStateMachine(
+            fakeCountriesRepository,
+            fakeUploadImagesRepository,
+            initialState
+        )
+
+        appStateMachine.state.test {
+            // when state machine is in UploadingImages state
+            assertEquals(initialState, awaitItem())
+            // consume single images uploaded event
+            awaitItem()
+            awaitItem()
+            // state machine transition to PickImages state after all images are uploaded
+            assertEquals(uploadedImageState, awaitItem())
+        }
+    }
+
+    @Test
+    fun `move to PickImages from UploadImages if there are no images to upload`() = runTest {
+        val initialState = UploadImagesState.UploadingImages(uploadingImages = emptyList())
+
+        val appStateMachine = AppStateMachine(
+            fakeCountriesRepository,
+            fakeUploadImagesRepository,
+            initialState
+        )
+
+        appStateMachine.state.test {
+            // when state machine is in UploadingImages state without images to upload
+            assertEquals(initialState, awaitItem())
+            // state machine transition to PickImages automatically
+            assertEquals(UploadImagesState.PickImages(), awaitItem())
         }
     }
 }
