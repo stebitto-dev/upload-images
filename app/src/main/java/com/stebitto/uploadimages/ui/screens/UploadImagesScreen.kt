@@ -30,11 +30,13 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -119,6 +121,7 @@ fun UploadImagesScreen(
                 )
         }
         is UploadImagesState.UploadingImages -> {
+            KeepScreenOn()
             UploadImagesList(
                 images = uiState.uploadedImages + uiState.uploadingImages,
                 modifier = modifier,
@@ -278,6 +281,17 @@ fun UploadedImageCard(
                     }
                 }
             }
+        }
+    }
+}
+
+@Composable
+fun KeepScreenOn() {
+    val currentView = LocalView.current
+    DisposableEffect(Unit) {
+        currentView.keepScreenOn = true
+        onDispose {
+            currentView.keepScreenOn = false
         }
     }
 }
