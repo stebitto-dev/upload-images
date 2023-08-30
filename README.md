@@ -32,7 +32,9 @@ The architecture is following Redux pattern, using **AppStateMachine** class as 
 The uploading phase is divided into two states: *PickImages* and *UploadingImages*. In PickImages state, user is able to pick new images from device repeatedly, or remove previously added elements. On the other hand, in UploadingImages state, the list cannot be modified until all uploads are finished.  
 Behind the scenes, UploadingImages is leveraging a *Channel* to synchronize the UI. On entering state, a new coroutine is spawned for every image in order to decompose the workflow with parallel uploads. Every time an upload completes, result is sent to the channel. On the other side, channel consumer is going to update the state with new data.
 
-AppStateMachine behavior is tested in **AppStateMachineTest**, while composables have their own instrumented test.
+AppStateMachine behavior is tested in **AppStateMachineTest**, while composables have their own instrumented test.  
+
+CI sample can be found in *.github/workflows/ci.yml*.
 
 ## Additional info
 
